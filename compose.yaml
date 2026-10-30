@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    ports: 
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgresql+psycopg://flask:devpassword@db:5432/flaskdb
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: flask
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: flaskdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flask -d flaskdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
